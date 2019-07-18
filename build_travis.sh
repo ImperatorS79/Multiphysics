@@ -12,6 +12,14 @@ tar -xf 3.3.7.tar.gz
 cd ./eigen-eigen-323c052e1731
 export INCLUDE=${PWD}:${INCLUDE}
 cd ../
+wget https://github.com/nlohmann/json/releases/download/v3.6.1/include.zip
+unzip include.zip
+rm -rf include.zip
+mv include/nlohmann nlohmann
+rm -rf include
+cd nlohmann
+export INCLUDE=${PWD}:${INCLUDE}
+cd ../
 git clone https://github.com/tgregov/Multiphysics.git
 cd Multiphysics/  
 mkdir build

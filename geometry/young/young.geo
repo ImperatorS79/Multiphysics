@@ -70,14 +70,8 @@ Physical Surface(1) = {1};
 
 // Boundary conditions
 Physical Curve("BC_Left") = {1};
-Physical Curve("BC_Up_1") = {2};
-Physical Curve("BC_Up_2") = {6};
-Physical Curve("BC_Down_1") = {12};
-Physical Curve("BC_Down_2") = {8};
+Physical Curve("BC_Frontier") = {2,6,12,8};
 Physical Curve("BC_Right") = {7};
-
-Physical Curve("BC_Obstacle_Up") = {3,4,5};
-Physical Curve("BC_Obstacle") = {13, 14, 15 ,16};
-Physical Curve("BC_Obstacle_Down") = {9,10,11};
+Physical Curve("BC_Obstacle") = {13,14,15,16,3,4,5,9,10,11};
 
 // Transfinite Surface{1};

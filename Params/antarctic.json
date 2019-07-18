@@ -1,0 +1,36 @@
+{
+	"general": {
+		"spaceIntegrationType": "Gauss10",
+		"basisFunctionType": "Lagrange",
+		"timeIntegrationType": "RK1",
+		"solverType": "strong",
+		"simulationTime": 24000,
+		"simulationTimeSteps": 2,
+		"simulationTimeToWrite": 150
+	},
+	"physics": {
+		"problemType": "shallowLin",
+		"whatToWrite": [ "H" ],
+		"numericalFlux": "LF",
+		"fluxCoefficients": [ 0.00981, 1 ],
+		"sourceTerms": "no",
+		"sourceCoefficients": [ 0 ],
+		"initialBoundaryConditions": [
+			{
+				"physicalGroup": "Ice",
+				"type": "reflectShallowLin",
+				"coefficients": [ 1 ]
+			},
+			{
+				"physicalGroup": "Infinity",
+				"type": "openShallowLin",
+				"coefficients": [ 1 ]
+			},
+			{
+				"physicalGroup": "Init_Cond",
+				"type": "gaussian2DShallowLin",
+				"coefficients": [ 0.01, 1200, 3000, 1200, 3000, 1 ]
+			}
+		]
+	}
+}

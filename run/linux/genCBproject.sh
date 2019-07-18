@@ -15,13 +15,23 @@ if [ ! -d "eigen-eigen-323c052e1731" ]; then
   rm -rf 3.3.7.tar.gz
 fi
 
+if [ ! -d "https://github.com/nlohmann/json/releases/download/v3.6.1/include.zip" ]; then
+  wget https://github.com/nlohmann/json/releases/download/v3.6.1/include.zip
+  unzip include.zip
+  rm -rf include.zip
+  mv include/nlohmann nlohmann
+  rm -rf include
+fi
+
 cd $HERE
 export GMSHSDK=${HOME}/gmsh-4.4.0-Linux64-sdk/
 export EIGENSDK=${HOME}/eigen-eigen-323c052e1731/
+export JSONSDK=${HOME}/nlohmann/
 
 export PATH=${GMSHSDK}/bin:${GMSHSDK}/lib:${PATH}
 export INCLUDE=${GMSHSDK}/include:${INCLUDE}
 export INCLUDE=${EIGENSDK}:${INCLUDE}
+export INCLUDE=${JSONSDK}:${INCLUDE}
 export LIB=${GMSHSDK}/lib:${LIB}
 export PYTHONPATH=${GMSHSDK}/lib:${PYTHONPATH}
 export DYLD_LIBRARY_PATH=${GMSHSDK}/lib:${DYLD_LIBRARY_PATH}

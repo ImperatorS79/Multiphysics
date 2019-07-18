@@ -1,0 +1,46 @@
+{
+	"general": {
+		"spaceIntegrationType": "Gauss10",
+		"basisFunctionType": "Lagrange",
+		"timeIntegrationType": "RK1",
+		"solverType": "weak",
+		"simulationTime": 10000,
+		"simulationTimeSteps": 10,
+		"simulationTimeToWrite": 10
+	},
+	"physics": {
+		"problemType": "shallow",
+		"whatToWrite": [ "vField" ],
+		"numericalFlux": "LF",
+		"fluxCoefficients": [ 9.81 ],
+		"sourceTerms": "sourceShallowCstGradCstFrict",
+		"sourceCoefficients": [ 1000, 0.0001, 0, 0, 0 ],
+		"initialBoundaryConditions": [
+			{
+				"physicalGroup": "BC_Left",
+				"type": "openShallow",
+				"coefficients": [ 4000 ]
+			},
+			{
+				"physicalGroup": "BC_Right",
+				"type": "openShallow",
+				"coefficients": [ 4000 ]
+			},
+			{
+				"physicalGroup": "BC_Up",
+				"type": "openShallow",
+				"coefficients": [ 4000 ]
+			},
+			{
+				"physicalGroup": "BC_Down",
+				"type": "openShallow",
+				"coefficients": [ 4000 ]
+			},
+			{
+				"physicalGroup": "Init_Cond",
+				"type": "gaussian2DShallow",
+				"coefficients": [ 20, 5e6, 100, 5e6, 100, 4000 ]
+			}
+		]
+	}
+}
