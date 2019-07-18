@@ -3,3 +3,5 @@
 *.hpp text eol=lf
 *.m text eol=lf
 *.dat text eol=lf
+*.json text eol=lf
+*.txt text eol=lf

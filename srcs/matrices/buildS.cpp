@@ -4,14 +4,13 @@
 
 // see .hpp for description
 void buildS(const Mesh& mesh, Eigen::SparseMatrix<double>& Sx,
-			Eigen::SparseMatrix<double>& Sy)
+            Eigen::SparseMatrix<double>& Sy)
 {
-
-	// * indexx/indexy: vectors of triplets that contains the coordinates in the
-    // 		[Sx]/[Sy] matrices of each ot their components
+    // * indexx/indexy: vectors of triplets that contains the coordinates in the
+    //      [Sx]/[Sy] matrices of each ot their components
     // * offsetMatrix: upper-left coordinate at which the current element matrix
-    //		should be added
-	std::vector<Eigen::Triplet<double>> indexx, indexy;
+    //      should be added
+    std::vector<Eigen::Triplet<double>> indexx, indexy;
     unsigned int offsetMatrix = 0;
 
     // loop over the elements
@@ -31,21 +30,20 @@ void buildS(const Mesh& mesh, Eigen::SparseMatrix<double>& Sx,
         // sum over the GP
         for(unsigned int k = 0 ; k < elmProp.nGP ; ++k)
         {
-
             // only the 2D case here
-            double dxdxi 	= mesh.elements[elm].jacobianHD[9*k];
-            double dxdeta 	= mesh.elements[elm].jacobianHD[9*k + 3];
-            double dydxi 	= mesh.elements[elm].jacobianHD[9*k + 1];
-            double dydeta 	= mesh.elements[elm].jacobianHD[9*k + 4];
+            double dxdxi    = mesh.elements[elm].jacobianHD[9*k];
+            double dxdeta   = mesh.elements[elm].jacobianHD[9*k + 3];
+            double dydxi    = mesh.elements[elm].jacobianHD[9*k + 1];
+            double dydeta   = mesh.elements[elm].jacobianHD[9*k + 4];
 
             // dzdzeta component of the jacobian: +/-1
             double sign = mesh.elements[elm].jacobianHD[9*k + 8];
 
             // the dets simplify in the inverse of a 2x2 matrix !
-            double dxidx 	= dydeta/sign;
-            double detadx 	= - dydxi/sign;
-            double dxidy 	= - dxdeta/sign;
-            double detady 	= dxdxi/sign;
+            double dxidx    = dydeta/sign;
+            double detadx   = - dydxi/sign;
+            double dxidy    = - dxdeta/sign;
+            double detady   = dxdxi/sign;
 
             // loop over the components of the matrix
             for(unsigned int i = 0 ; i < elmProp.nSF ; ++i)
@@ -80,11 +78,9 @@ void buildS(const Mesh& mesh, Eigen::SparseMatrix<double>& Sx,
                 }
             }
         }
-
         // increase the offset of the local matrix
         offsetMatrix += elmProp.nSF;
     }
-
     // add the triplets in the sparse matrix
     Sx.setFromTriplets(indexx.begin(), indexx.end());
     Sy.setFromTriplets(indexy.begin(), indexy.end());

@@ -4,9 +4,9 @@
 
 // see .hpp file for description
 bool isPermutation(const std::vector<int>& vec1,
-	               const std::vector<int>& vec2,
-	               std::vector<unsigned int>& permutation1,
-	               std::vector<unsigned int>& permutation2)
+                   const std::vector<int>& vec2,
+                   std::vector<unsigned int>& permutation1,
+                   std::vector<unsigned int>& permutation2)
 {
     assert(vec1.size() != 0 && vec2.size() == vec1.size());
     assert(permutation1.size() == 0 && permutation2.size() == 0);

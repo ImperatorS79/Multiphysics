@@ -11,16 +11,16 @@
  */
 struct Field
 {
-	std::vector<Eigen::VectorXd> u; /**< Solution fields (of size equal
+    std::vector<Eigen::VectorXd> u; /**< Solution fields (of size equal
                                          to the number of scalar unknowns) */
 
-	std::vector<std::vector<Eigen::VectorXd>> flux; /**< Physical flux fields (of size equal to the number of dimension, with each
+    std::vector<std::vector<Eigen::VectorXd>> flux; /**< Physical flux fields (of size equal to the number of dimension, with each
                                                          dimension as a size equal to the number of scalar unknowns) */
 
     std::vector<Eigen::VectorXd> s; /**< Source terms (of size equal
                                          to the number of scalar unknowns) */
 
-	std::vector<Eigen::VectorXd> DeltaU; /**< Time-integration increment */
+    std::vector<Eigen::VectorXd> DeltaU; /**< Time-integration increment */
 
     std::vector<Eigen::VectorXd> Iu; /**< RHS fields */
 
@@ -29,26 +29,26 @@ struct Field
     std::vector<Eigen::VectorXd> k3; /**< Temporary integration variables (useful for RK schemes) */
     std::vector<Eigen::VectorXd> k4; /**< Temporary integration variables (useful for RK schemes) */
 
-	/**
+    /**
      * \brief Constructor
      * \param numNodes The number of nodes in the mesh.
      * \param numUnknown The number of unknowns of the problem.
      * \param dim The dimension of the mesh.
      */
-	Field(unsigned int numNodes, unsigned short numUnknown, unsigned short dim)
-	{
+    Field(unsigned int numNodes, unsigned short numUnknown, unsigned short dim)
+    {
         // resize each field
-	    flux.resize(dim);
-	    for(unsigned short i = 0 ; i < dim ; ++i)
+        flux.resize(dim);
+        for(unsigned short i = 0 ; i < dim ; ++i)
         {
             flux[i].resize(numUnknown);
         }
 
-		u.resize(numUnknown);
-		s.resize(numUnknown);
-		DeltaU.resize(numUnknown);
-		Iu.resize(numUnknown);
-		for(unsigned short i = 0 ; i < numUnknown ; ++i)
+        u.resize(numUnknown);
+        s.resize(numUnknown);
+        DeltaU.resize(numUnknown);
+        Iu.resize(numUnknown);
+        for(unsigned short i = 0 ; i < numUnknown ; ++i)
         {
             u[i].resize(numNodes);
             DeltaU[i].resize(numNodes);
@@ -65,7 +65,7 @@ struct Field
         k2.resize(numNodes);
         k3.resize(numNodes);
         k4.resize(numNodes);
-	}
+    }
 };
 
 /**

@@ -23,23 +23,23 @@ static void Fweak(double t, Field& field,
                   const Matrix& matrix, const Mesh& mesh,
                   const SolverParams& solverParams)
 {
- 	// compute the nodal physical fluxes
- 	PartialField partialField(solverParams.nUnknowns, mesh.dim);
+    // compute the nodal physical fluxes
+    PartialField partialField(solverParams.nUnknowns, mesh.dim);
 
- 	solverParams.flux(field, partialField, solverParams, false);
+    solverParams.flux(field, partialField, solverParams, false);
 
- 	if(solverParams.IsSourceTerms)
+    if(solverParams.IsSourceTerms)
         solverParams.sourceTerm(field, solverParams);
 
-	// compute the right-hand side of the master equation (phi or psi)
- 	buildFlux(mesh, field, 1, t, solverParams);
+    // compute the right-hand side of the master equation (phi or psi)
+    buildFlux(mesh, field, 1, t, solverParams);
 
- 	// compute the increment
- 	for(unsigned short unk = 0 ; unk < field.DeltaU.size() ; ++unk)
+    // compute the increment
+    for(unsigned short unk = 0 ; unk < field.DeltaU.size() ; ++unk)
     {
         field.DeltaU[unk]
             = matrix.invM*(field.Iu[unk] + matrix.Sx*field.flux[0][unk]
-            				+ matrix.Sy*field.flux[1][unk]);
+                            + matrix.Sy*field.flux[1][unk]);
 
         if(solverParams.IsSourceTerms)
             field.DeltaU[unk]+=field.s[unk];
@@ -62,21 +62,21 @@ static void Fstrong(double t, Field& field, const Matrix& matrix, const Mesh& me
 {
     PartialField partialField(solverParams.nUnknowns, mesh.dim);
 
- 	// compute the nodal physical fluxes
- 	solverParams.flux(field, partialField, solverParams, false);
+    // compute the nodal physical fluxes
+    solverParams.flux(field, partialField, solverParams, false);
 
- 	if(solverParams.IsSourceTerms)
+    if(solverParams.IsSourceTerms)
         solverParams.sourceTerm(field, solverParams);
 
-	// compute the right-hand side of the master equation (phi or psi)
- 	buildFlux(mesh, field, -1, t, solverParams);
+    // compute the right-hand side of the master equation (phi or psi)
+    buildFlux(mesh, field, -1, t, solverParams);
 
- 	// compute the increment
+    // compute the increment
     for(unsigned short unk = 0 ; unk < field.DeltaU.size() ; ++unk)
     {
         field.DeltaU[unk]
             = matrix.invM*(field.Iu[unk] - matrix.Sx*field.flux[0][unk]
-            				- matrix.Sy*field.flux[1][unk]);
+                            - matrix.Sy*field.flux[1][unk]);
 
         if(solverParams.IsSourceTerms)
             field.DeltaU[unk]+=field.s[unk];
@@ -86,50 +86,50 @@ static void Fstrong(double t, Field& field, const Matrix& matrix, const Mesh& me
 
 // see .hpp file for description
 bool timeInteg(const Mesh& mesh, SolverParams& solverParams,
-				const std::string& fileName, const std::string& resultsName)
+               const std::string& fileName, const std::string& resultsName)
 {
         std::cout << "Number of nodes: " << mesh.nodeData.numNodes << std::endl;
 
-	/*******************************************************************************
-	 *						            TIME STEPS 								   *
-	 *******************************************************************************/
+    /*******************************************************************************
+     *                                  TIME STEPS                                 *
+     *******************************************************************************/
     unsigned int nTimeSteps
-    	= static_cast<unsigned int>(solverParams.simTime/solverParams.timeStep);
+        = static_cast<unsigned int>(solverParams.simTime/solverParams.timeStep);
     unsigned int nTimeStepsDtWrite
-    	= static_cast<unsigned int>(solverParams.simTimeDtWrite/solverParams.timeStep);
+        = static_cast<unsigned int>(solverParams.simTimeDtWrite/solverParams.timeStep);
 
 
-	/*******************************************************************************
-	 *						            MATRICES 								   *
-	 *******************************************************************************/
-	Matrix matrix;
-	buildMatrix(mesh, matrix);
+    /*******************************************************************************
+     *                                  MATRICES                                   *
+     *******************************************************************************/
+    Matrix matrix;
+    buildMatrix(mesh, matrix);
 
 
-	/*******************************************************************************
-	 *						       WEAK AND STRONG FORM 						   *
-	 *******************************************************************************/
-  	//Function pointer to the used function (weak vs strong form)
-  	UsedF usedF;
+    /*******************************************************************************
+     *                              WEAK AND STRONG FORM                           *
+     *******************************************************************************/
+    //Function pointer to the used function (weak vs strong form)
+    UsedF usedF;
 
-  	if(solverParams.solverType == "weak")
-  	{
-  		usedF = Fweak;
-      	matrix.Sx = matrix.Sx.transpose();
-      	matrix.Sy = matrix.Sy.transpose();
-  	}
-  	else
-  	{
-     	usedF = Fstrong;
-  	}
+    if(solverParams.solverType == "weak")
+    {
+        usedF = Fweak;
+        matrix.Sx = matrix.Sx.transpose();
+        matrix.Sy = matrix.Sy.transpose();
+    }
+    else
+    {
+        usedF = Fstrong;
+    }
 
-  	//Initialization of the field of unknowns
-  	Field field(mesh.nodeData.numNodes, solverParams.nUnknowns, mesh.dim);
+    //Initialization of the field of unknowns
+    Field field(mesh.nodeData.numNodes, solverParams.nUnknowns, mesh.dim);
 
-	/*******************************************************************************
-	 *						       INITIAL CONDITION      						   *
-	 *******************************************************************************/
-	std::vector<double> uIC(solverParams.nUnknowns);
+    /*******************************************************************************
+     *                              INITIAL CONDITION                              *
+     *******************************************************************************/
+    std::vector<double> uIC(solverParams.nUnknowns);
 
     for(auto element : mesh.elements)
     {
@@ -144,36 +144,36 @@ bool timeInteg(const Mesh& mesh, SolverParams& solverParams,
     }
 
 
-	/*******************************************************************************
-	 *						       LAUNCH GMSH  	      						   *
-	 *******************************************************************************/
-	gmsh::initialize();
-	gmsh::option::setNumber("General.Terminal", 1);
-	gmsh::open(fileName);
-	std::vector<std::string> names;
-	gmsh::model::list(names);
-	std::string modelName = names[0];
-	std::string dataType = "ElementNodeData";
-	std::vector<std::size_t> elementTags = mesh.nodeData.elementTags;
-	std::vector<unsigned int> elementNumNodes = mesh.nodeData.elementNumNodes;
+    /*******************************************************************************
+     *                               LAUNCH GMSH                                   *
+     *******************************************************************************/
+    gmsh::initialize();
+    gmsh::option::setNumber("General.Terminal", 1);
+    gmsh::open(fileName);
+    std::vector<std::string> names;
+    gmsh::model::list(names);
+    std::string modelName = names[0];
+    std::string dataType = "ElementNodeData";
+    std::vector<std::size_t> elementTags = mesh.nodeData.elementTags;
+    std::vector<unsigned int> elementNumNodes = mesh.nodeData.elementNumNodes;
     std::vector<std::vector<double>> uDisplay(elementNumNodes.size());
 
-	double t = 0.0;
+    double t = 0.0;
 
-	/*******************************************************************************
-	 *						       INITIAL CONDITION      						   *
-	 *******************************************************************************/
+    /*******************************************************************************
+     *                              INITIAL CONDITION                              *
+     *******************************************************************************/
     solverParams.write(uDisplay, elementNumNodes, elementTags, modelName,0, 0, field,
                          solverParams.fluxCoeffs, solverParams.whatToWrite,
                          solverParams.viewTags);
 
 
-	/*******************************************************************************
-	 *						       TIME INTEGRATION      						   *
-	 *******************************************************************************/
-	// temporary vectors (only for RK4, but I don't want to define them at each time
-	// iteration)
-	Field temp = field;
+    /*******************************************************************************
+     *                              TIME INTEGRATION                               *
+     *******************************************************************************/
+    // temporary vectors (only for RK4, but I don't want to define them at each time
+    // iteration)
+    Field temp = field;
 
     //Function pointer to the used integration scheme
     IntegScheme integScheme;
@@ -196,17 +196,17 @@ bool timeInteg(const Mesh& mesh, SolverParams& solverParams,
     }
 
 
-	// numerical integration
-	unsigned int ratio, currentDecade = 0;
-	for(unsigned int nbrStep = 1 ; nbrStep < nTimeSteps + 1 ;
-		nbrStep++)
-	{
-  		// display progress
-		ratio = int(100*double(nbrStep - 1)/double(nTimeSteps));
+    // numerical integration
+    unsigned int ratio, currentDecade = 0;
+    for(unsigned int nbrStep = 1 ; nbrStep < nTimeSteps + 1 ;
+        nbrStep++)
+    {
+        // display progress
+        ratio = int(100*double(nbrStep - 1)/double(nTimeSteps));
         if(ratio >= currentDecade)
         {
             std::cout  	<< "\r" << "Integrating: " << ratio << "%"
-            			<< " of the time steps done" << std::flush;
+                        << " of the time steps done" << std::flush;
             currentDecade = ratio + 1;
         }
 
@@ -214,27 +214,27 @@ bool timeInteg(const Mesh& mesh, SolverParams& solverParams,
 
         temp = field;
 
-		// check that it does not diverge
-		// assert(field.u[0].maxCoeff() <= 1E5);
+        // check that it does not diverge
+        // assert(field.u[0].maxCoeff() <= 1E5);
 
-		// add time step
-		t += solverParams.timeStep;
+        // add time step
+        t += solverParams.timeStep;
 
         // store the results every Dt only.
-		if((nbrStep % nTimeStepsDtWrite) == 0)
+        if((nbrStep % nTimeStepsDtWrite) == 0)
         {
             solverParams.write(uDisplay, elementNumNodes, elementTags, modelName,
                          nbrStep, t, field, solverParams.fluxCoeffs,
                          solverParams.whatToWrite, solverParams.viewTags);
         }
-	}
+    }
 
-	std::cout 	<< "\r" << "Integrating: 100% of the time steps done" << std::flush
-	 			<< std::endl;
+    std::cout << "\r" << "Integrating: 100% of the time steps done" << std::flush
+              << std::endl;
 
-	// write the results & finalize
+    // write the results & finalize
     writeEnd(solverParams.viewTags, solverParams.whatToWrite, resultsName);
     gmsh::finalize();
 
-	return true;
+    return true;
 }
