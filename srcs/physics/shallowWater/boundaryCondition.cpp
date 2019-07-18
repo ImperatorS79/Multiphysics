@@ -40,10 +40,12 @@ void openShallow(std::vector<double>& uAtIBC, const std::vector<double>& pos,
     double alpha = (edgeNormal[0]*field.u[1][indexJ]
                     + edgeNormal[1]*field.u[2][indexJ])/field.u[0][indexJ]
                     - sqrt(g/H)*(field.u[0][indexJ] - H);
+    double beta = (edgeNormal[1]*field.u[1][indexJ]
+                    - edgeNormal[0]*field.u[2][indexJ])/field.u[0][indexJ];
 
     uAtIBC[0] = H;
-    uAtIBC[1] = alpha*edgeNormal[0];
-    uAtIBC[2] = alpha*edgeNormal[1];
+    uAtIBC[1] = alpha*edgeNormal[0]-beta*edgeNormal[1];
+    uAtIBC[2] = alpha*edgeNormal[1]-beta*edgeNormal[0];
 }
 
 // see .hpp file for description
@@ -63,9 +65,12 @@ void openAffShallow(std::vector<double>& uAtIBC, const std::vector<double>& pos,
                         + edgeNormal[1]*field.u[2][indexJ])/field.u[0][indexJ]
                         - sqrt(g/H)*(field.u[0][indexJ] - H);
 
+    double beta = (edgeNormal[1]*field.u[1][indexJ]
+                    - edgeNormal[0]*field.u[2][indexJ])/field.u[0][indexJ];
+
     uAtIBC[0] = H;
-    uAtIBC[1] = alpha*edgeNormal[0];
-    uAtIBC[2] = alpha*edgeNormal[1];
+    uAtIBC[1] = alpha*edgeNormal[0]-beta*edgeNormal[1];
+    uAtIBC[2] = alpha*edgeNormal[1]-beta*edgeNormal[0];
 }
 
 // see .hpp file for description
@@ -98,9 +103,12 @@ void sinusShallow(std::vector<double>& uAtIBC, const std::vector<double>& pos,
                     + edgeNormal[1]*field.u[2][indexJ])/field.u[0][indexJ]
                     - sqrt(g/H)*(field.u[0][indexJ] - H);
 
+    double beta = (edgeNormal[1]*field.u[1][indexJ]
+                    - edgeNormal[0]*field.u[2][indexJ])/field.u[0][indexJ];
+
     uAtIBC[0] = H;
-    uAtIBC[1] = alpha*edgeNormal[0];
-    uAtIBC[2] = alpha*edgeNormal[1];
+    uAtIBC[1] = alpha*edgeNormal[0]-beta*edgeNormal[1];
+    uAtIBC[2] = alpha*edgeNormal[1]-beta*edgeNormal[0];
 }
 
 // see .hpp file for description
@@ -122,9 +130,12 @@ void sinusAffShallow(std::vector<double>& uAtIBC, const std::vector<double>& pos
                     + edgeNormal[1]*field.u[2][indexJ])/field.u[0][indexJ]
                     - sqrt(g/H)*(field.u[0][indexJ] - H);
 
+    double beta = (edgeNormal[1]*field.u[1][indexJ]
+                    - edgeNormal[0]*field.u[2][indexJ])/field.u[0][indexJ];
+
     uAtIBC[0] = H;
-    uAtIBC[1] = alpha*edgeNormal[0];
-    uAtIBC[2] = alpha*edgeNormal[1];
+    uAtIBC[1] = alpha*edgeNormal[0]-beta*edgeNormal[1];
+    uAtIBC[2] = alpha*edgeNormal[1]-beta*edgeNormal[0];
 }
 
 // see .hpp file for description
