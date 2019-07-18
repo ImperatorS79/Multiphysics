@@ -8,5 +8,6 @@
 #include "linShallowWater/boundaryCondition.hpp"
 #include "shallowWater/boundaryCondition.hpp"
 #include "transport/boundaryCondition.hpp"
+#include "linAcoustic/boundaryCondition.hpp"
 
 #endif // boundaryConditions_hpp_included

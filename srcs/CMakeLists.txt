@@ -21,6 +21,10 @@ main.cpp
 ./physics/transport/phiPsi.hpp ./physics/transport/phiPsi.cpp
 ./physics/transport/boundaryCondition.hpp ./physics/transport/boundaryCondition.cpp
 ./physics/transport/writer.hpp ./physics/transport/writer.cpp
+./physics/linAcoustic/flux.hpp ./physics/linAcoustic/flux.cpp
+./physics/linAcoustic/phiPsi.hpp ./physics/linAcoustic/phiPsi.cpp
+./physics/linAcoustic/boundaryCondition.hpp ./physics/linAcoustic/boundaryCondition.cpp
+./physics/linAcoustic/writer.hpp ./physics/linAcoustic/writer.cpp
 ./physics/fluxes.hpp ./physics/phiPsis.hpp ./physics/boundaryConditions.hpp ./physics/sources.hpp
 ./physics/ibcFunction.hpp ./physics/writers.hpp
 ./physics/meanPhiPsi.cpp ./physics/meanPhiPsi.hpp

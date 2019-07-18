@@ -5,5 +5,6 @@
 #include "linShallowWater/phiPsi.hpp"
 #include "shallowWater/phiPsi.hpp"
 #include "transport/phiPsi.hpp"
+#include "linAcoustic/phiPsi.hpp"
 
 #endif // phiPsis_hpp_included

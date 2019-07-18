@@ -8,6 +8,7 @@
 #include "../mesh/Mesh.hpp"
 #include "../physics/writers.hpp"
 #include "../physics/ibcFunction.hpp"
+
 /**
  * \struct SolverParams
  * \brief Parameters of the method.

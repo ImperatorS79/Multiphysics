@@ -8,103 +8,46 @@
 #include <cerrno> //Change with something more c++ ;-)
 #include <cstring>
 #include <vector>
+#include "nlohmann/json.hpp"
 #include "Params.hpp"
 #include "../physics/boundaryConditions.hpp"
 #include "../physics/fluxes.hpp"
 #include "../physics/phiPsis.hpp"
 #include "../physics/sources.hpp"
 
-/**
- * \brief Wrapper of std::getline to have comments in file with //
- * \param file The file which has been previously opened.
- * \param line The computed line (without comments)
- */
-static void getLine(std::ifstream& file, std::string& line)
-{
-    std::string tempLine;
-    while(true) //be careful with this
-    {
-        std::getline(file, tempLine);
-        if(tempLine.compare(0, 2, "//") != 0)
-        {
-            std::size_t pos;
-            pos = tempLine.find("//");
-            if(pos != std::string::npos)
-            {
-                while(true)
-                {
-                    if(tempLine.at(pos-1) == ' ' || tempLine.at(pos-1) == '\t')
-                        tempLine.erase(pos-1, 1);
-                    else
-                    {
-                        tempLine.erase(pos);
-                        break;
-                    }
-                    pos = tempLine.find("//");
-                }
-            }
-
-            line = tempLine;
-            return;
-        }
-    }
-}
-
 
 /**
  * \brief Load boundary conditions from a file
- * \param paramFile The file which has been previously opened.
+ * \param j JSON object describing the parameters.
  * \param solverParams The structure in which the parameters are loaded.
  * \param fileName The name of the parameters file which has been opened (for debug output).
  * \return true if the loading succeeds, false otherwise.
  */
-static bool handleBoundaryCondition(std::ifstream& paramFile, SolverParams& solverParams,
+static bool handleBoundaryCondition(const nlohmann::json& j,
+                                    SolverParams& solverParams,
                                     const std::string& fileName)
 {
+    auto initBoundaryConditions = j["physics"]["initialBoundaryConditions"];
     unsigned int nBC = 0;
-    bool foundInitCond = false;
-
-    while(true)
+    for(auto initBoundaryCondition : initBoundaryConditions)
     {
         ibc tempCondition;
-        std::string bcName;
-        std::string bcType;
-        std::string tempBcCoeff;
-        std::vector<double> bcCoeff;
-
-        if(paramFile.eof())
-        {
-            std::cout << "End of file reached." << std::endl;
-            break;
-        }
-        getLine(paramFile, bcName);
-
-        getLine(paramFile, bcType);
-        if(bcType[0] != '\t') //Let's make them tabulated for easier reading
-        {
-            std::cerr << "Bad type format for BC  " << bcName
-                      << " in parameter file " << fileName << std::endl;
-
-            return false;
-        }
-        bcType.erase(0,1);
-
         bool error = false;
         if(solverParams.problemType == "transport")
         {
-            if(bcType == "constant")
+            if(initBoundaryCondition["type"] == "constant")
                 tempCondition.ibcFunc = constant;
 
-            else if(bcType == "sinusTransport")
+            else if(initBoundaryCondition["type"] == "sinusTransport")
                 tempCondition.ibcFunc = sinusTransport;
 
-            else if(bcType == "gaussianTransport")
+            else if(initBoundaryCondition["type"] == "gaussianTransport")
                 tempCondition.ibcFunc = gaussianTransport;
 
-            else if(bcType == "freeTransport")
+            else if(initBoundaryCondition["type"] == "freeTransport")
                 tempCondition.ibcFunc = freeTransport;
 
-            else if(bcType == "gaussian2DTransport")
+            else if(initBoundaryCondition["type"] == "gaussian2DTransport")
                 tempCondition.ibcFunc = gaussian2DTransport;
 
             else
@@ -112,34 +55,34 @@ static bool handleBoundaryCondition(std::ifstream& paramFile, SolverParams& solv
         }
         else if(solverParams.problemType == "shallow")
         {
-            if(bcType == "constant")
+            if(initBoundaryCondition["type"] == "constant")
                 tempCondition.ibcFunc = constant;
 
-            else if(bcType == "affineShallow")
+            else if(initBoundaryCondition["type"] == "affineShallow")
                 tempCondition.ibcFunc = affineShallow;
 
-            else if(bcType == "sinusShallow")
+            else if(initBoundaryCondition["type"] == "sinusShallow")
                 tempCondition.ibcFunc = sinusShallow;
 
-            else if(bcType == "sinusAffShallow")
+            else if(initBoundaryCondition["type"] == "sinusAffShallow")
                 tempCondition.ibcFunc = sinusAffShallow;
 
-            else if(bcType == "reflectShallow")
+            else if(initBoundaryCondition["type"] == "reflectShallow")
                 tempCondition.ibcFunc = reflectShallow;
 
-            else if(bcType == "gaussian2DShallow")
+            else if(initBoundaryCondition["type"] == "gaussian2DShallow")
                 tempCondition.ibcFunc = gaussian2DShallow;
 
-            else if(bcType == "gaussian1DShallowX")
+            else if(initBoundaryCondition["type"] == "gaussian1DShallowX")
                 tempCondition.ibcFunc = gaussian1DShallowX;
 
-            else if(bcType == "gaussian1DShallowY")
+            else if(initBoundaryCondition["type"] == "gaussian1DShallowY")
                 tempCondition.ibcFunc = gaussian1DShallowY;
 
-            else if(bcType == "openShallow")
+            else if(initBoundaryCondition["type"] == "openShallow")
                 tempCondition.ibcFunc = openShallow;
 
-            else if(bcType == "openAffShallow")
+            else if(initBoundaryCondition["type"] == "openAffShallow")
                 tempCondition.ibcFunc = openAffShallow;
 
             else
@@ -148,85 +91,80 @@ static bool handleBoundaryCondition(std::ifstream& paramFile, SolverParams& solv
         }
         else if(solverParams.problemType == "shallowLin")
         {
-            if(bcType == "constant")
+            if(initBoundaryCondition["type"] == "constant")
                 tempCondition.ibcFunc = constant;
 
-            else if(bcType == "sinusShallowLin")
+            else if(initBoundaryCondition["type"] == "sinusShallowLin")
                 tempCondition.ibcFunc = sinusShallowLin;
 
-            else if(bcType == "reflectShallowLin")
+            else if(initBoundaryCondition["type"] == "reflectShallowLin")
                 tempCondition.ibcFunc = reflectShallowLin;
 
-            else if(bcType == "gaussian2DShallowLin")
+            else if(initBoundaryCondition["type"] == "gaussian2DShallowLin")
                 tempCondition.ibcFunc = gaussian2DShallowLin;
 
-            else if(bcType == "gaussian1DShallowXLin")
+            else if(initBoundaryCondition["type"] == "gaussian1DShallowXLin")
                 tempCondition.ibcFunc = gaussian1DShallowXLin;
 
-            else if(bcType == "gaussian1DShallowYLin")
+            else if(initBoundaryCondition["type"] == "gaussian1DShallowYLin")
                 tempCondition.ibcFunc = gaussian1DShallowYLin;
 
-            else if(bcType == "openShallowLin")
+            else if(initBoundaryCondition["type"] == "openShallowLin")
                 tempCondition.ibcFunc = openShallowLin;
 
             else
                 error = true;
         }
+        else if(solverParams.problemType == "acousticLin")
+        {
+            if(initBoundaryCondition["type"] == "constant")
+                tempCondition.ibcFunc = constant;
 
+            else if(initBoundaryCondition["type"] == "sinusAcousticLin")
+                tempCondition.ibcFunc = sinusAcousticLin;
+
+            else if(initBoundaryCondition["type"] == "reflectAcousticLin")
+                tempCondition.ibcFunc = reflectAcousticLin;
+
+            else if(initBoundaryCondition["type"] == "gaussian2DAcousticLin")
+                tempCondition.ibcFunc = gaussian2DAcousticLin;
+
+            else if(initBoundaryCondition["type"] == "gaussian1DAcousticLinX")
+                tempCondition.ibcFunc = gaussian1DAcousticLinX;
+
+            else if(initBoundaryCondition["type"] == "gaussian1DAcousticLinY")
+                tempCondition.ibcFunc = gaussian1DAcousticLinY;
+
+            else if(initBoundaryCondition["type"] == "openAcousticLin")
+                tempCondition.ibcFunc = openAcousticLin;
+
+            else
+                error = true;
+        }
         if(error)
         {
-            std::cerr << "Unhandled boundary condition type " << bcType
-                      << " for boundary " << std::endl << bcName
-                      << " for problem type "
+            std::cerr << "Unhandled boundary condition type "
+                      << initBoundaryCondition["type"]
+                      << " for boundary " << std::endl
+                      << initBoundaryCondition["physicalGroup"] << " for problem type "
                       << solverParams.problemType << " in parameter file "
                       << fileName <<std::endl;
 
             return false;
         }
 
-        getLine(paramFile, tempBcCoeff);
-        if(tempBcCoeff[0] != '\t') //Let's make them tabulated for easier reading
-        {
-            std::cerr << "Bad coefficient format for BC  " << bcName
-                      << " in parameter file " << fileName << std::endl;
+        tempCondition.coefficients = initBoundaryCondition["coefficients"].get<std::vector<double>>();
 
-            return false;
-        }
-        tempBcCoeff.erase(0,1);
-        unsigned int precComaPos = -1;
-        for(unsigned int i = 0 ; i < tempBcCoeff.size() ; ++i)
-        {
-            if(tempBcCoeff[i] == ',')
-            {
-                bcCoeff.push_back(std::stod(tempBcCoeff
-                            .substr(precComaPos + 1, i - precComaPos - 1)));
-                precComaPos = i;
-            }
-        }
-        //At the end, still one push_back to do
-        bcCoeff.push_back(std::stod(tempBcCoeff
-                    .substr(precComaPos+1, tempBcCoeff.size() - precComaPos - 1)));
-
-        tempCondition.coefficients = bcCoeff;
-
-        if(bcName == "Init_Cond")
-        {
+        if(initBoundaryCondition["physicalGroup"] == "Init_Cond")
             solverParams.initCondition = tempCondition;
-            foundInitCond = true;
-        }
+
         else
         {
-            nBC++;
-            solverParams.boundaryConditions[bcName] = tempCondition;
+            solverParams.boundaryConditions[
+                                initBoundaryCondition["physicalGroup"]] = tempCondition;
+
+            ++nBC;
         }
-    }
-
-    if(!foundInitCond)
-    {
-        std::cerr << "No initial condition (Init_Cond field) found in parameter file"
-                  << " " << fileName << std::endl;
-
-        return false;
     }
 
     std::cout << "Initial condition present and " << nBC
@@ -236,24 +174,18 @@ static bool handleBoundaryCondition(std::ifstream& paramFile, SolverParams& solv
     return true;
 }
 
-//Documentation in .hpp
-bool loadSolverParams(const std::string& fileName, SolverParams& solverParams)
+/**
+ * \brief Load general parameters from a file
+ * \param j JSON object describing the parameters.
+ * \param solverParams The structure in which the parameters are loaded.
+ * \param fileName The name of the parameters file which has been opened (for debug output).
+ * \return true if the loading succeeds, false otherwise.
+ */
+static bool loadGeneralParams(const nlohmann::json& j,
+                              const std::string& fileName,
+                              SolverParams& solverParams)
 {
-    std::ifstream paramFile(fileName);
-
-    if(!paramFile.is_open())
-    {
-        std::cerr << "Something went wrong when trying to read the file "
-                  << fileName << std::endl
-                  << std::strerror(errno) << std::endl;
-
-        paramFile.close();
-        return false;
-    }
-
-    std::string temp;
-    getLine(paramFile, temp);
-
+    std::string temp = j["general"]["spaceIntegrationType"];
     if(temp.compare(0, 5, "Gauss") != 0
        || !(temp.substr(5, temp.size() - 5).find_first_not_of("0123456789")
             == std::string::npos))
@@ -261,178 +193,185 @@ bool loadSolverParams(const std::string& fileName, SolverParams& solverParams)
         std::cerr << "Unexpected space integration type " << temp
                   << " in parameter file " << fileName << std::endl;
 
-        paramFile.close();
         return false;
     }
-
     solverParams.spaceIntType = temp;
 
-    temp.clear();
-    getLine(paramFile, temp);
-
+    temp = j["general"]["basisFunctionType"];
     if(!(temp == "Lagrange" || temp == "Isoparametric"))
     {
         std::cerr << "Unexpected basis function type " << temp
                   << " in parameter file " << fileName << std::endl;
 
-        paramFile.close();
         return false;
     }
-
     solverParams.basisFuncType = temp;
 
-    temp.clear();
-    getLine(paramFile, temp);
-
+    temp = j["general"]["timeIntegrationType"];
     if(!(temp == "RK1" || temp == "RK2" || temp == "RK3" || temp == "RK4"))
     {
         std::cerr << "Unexpected time integration type " << temp
                   << " in parameter file " << fileName << std::endl;
 
-        paramFile.close();
         return false;
     }
-
     solverParams.timeIntType = temp;
 
-    temp.clear();
-    getLine(paramFile, temp);
-
+    temp = j["general"]["solverType"];
     if(!(temp == "strong" || temp == "weak"))
     {
         std::cerr << "Unexpected solver type " << temp
                   << " in parameter file " << fileName << std::endl;
 
-        paramFile.close();
         return false;
     }
-
     solverParams.solverType = temp;
 
-    temp.clear();
-    getLine(paramFile, temp);
+    solverParams.simTime = j["general"]["simulationTime"];
 
-    if(!(temp.find_first_not_of(".0123456789") == std::string::npos))
+    solverParams.timeStep = j["general"]["simulationTimeSteps"];
+
+    solverParams.simTimeDtWrite = j["general"]["simulationTimeToWrite"];
+
+    return true;
+}
+
+/**
+ * \brief Load physical parameters from a file
+ * \param j JSON object describing the parameters.
+ * \param solverParams The structure in which the parameters are loaded.
+ * \param fileName The name of the parameters file which has been opened (for debug output).
+ * \return true if the loading succeeds, false otherwise.
+ */
+static bool loadPhysicsParams(const nlohmann::json& j,
+                              const std::string& fileName,
+                              SolverParams& solverParams)
+{
+    std::string temp;
+
+    solverParams.problemType = j["physics"]["problemType"];
+    if(solverParams.problemType == "shallow")
     {
-        std::cerr << "Unexpected simulation time duration " << temp
-                  << " in parameter file " << fileName << std::endl;
-
-        paramFile.close();
-        return false;
-    }
-
-    solverParams.simTime = std::stod(temp);
-
-    temp.clear();
-    getLine(paramFile, temp);
-
-    if(!(temp.find_first_not_of(".0123456789") == std::string::npos))
-    {
-        std::cerr << "Unexpected time step " << temp
-                  << " in parameter file " << fileName << std::endl;
-
-        paramFile.close();
-        return false;
-    }
-
-    solverParams.timeStep = std::stod(temp);
-
-    temp.clear();
-    getLine(paramFile, temp);
-
-    if(!(temp.find_first_not_of(".0123456789") == std::string::npos))
-    {
-        std::cerr << "Unexpected time between data writing " << temp
-                  << " in parameter file " << fileName << std::endl;
-
-        paramFile.close();
-        return false;
-    }
-    solverParams.simTimeDtWrite = std::stod(temp);
-
-    temp.clear();
-    getLine(paramFile, temp);
-    if(temp == "shallow")
-    {
-        solverParams.problemType = temp;
         solverParams.nUnknowns = 3;
         solverParams.flux = fluxShallow;
     }
-    else if(temp == "transport")
+    else if(solverParams.problemType == "transport")
     {
-        solverParams.problemType = temp;
         solverParams.nUnknowns = 1;
         solverParams.flux = fluxTransport;
     }
-    else if(temp == "shallowLin")
+    else if(solverParams.problemType == "shallowLin")
     {
-        solverParams.problemType = temp;
         solverParams.nUnknowns = 3;
         solverParams.flux = fluxShallowLin;
+    }
+    else if(solverParams.problemType == "AcousticLin")
+    {
+        solverParams.nUnknowns = 3;
+        solverParams.flux = fluxAcousticLin;
     }
     else
     {
         std::cerr << "Unexpected problem type " << temp
                   << " in parameter file " << fileName << std::endl;
 
-        paramFile.close();
         return false;
     }
 
-    temp.clear();
-    getLine(paramFile, temp);
-    unsigned int precComaPos = -1;
-    for(unsigned int i = 0 ; i < temp.size() ; ++i)
+    bool error = false;
+    std::vector<std::string> whatToWrite = j["physics"]["whatToWrite"];
+    if(solverParams.problemType == "shallow" ||
+               solverParams.problemType == "shallowLin")
     {
-        if(temp[i] == ',')
+        solverParams.whatToWrite.resize(5);
+        solverParams.viewTags.resize(5);
+        std::fill(solverParams.whatToWrite.begin(),
+                  solverParams.whatToWrite.end(), false);
+        for (unsigned short i = 0 ; i < whatToWrite.size() ; ++i)
         {
-            solverParams.whatToWrite.push_back(
-                (temp.substr(precComaPos + 1, i - precComaPos - 1))
-                 == "1" ? true : false);
-            precComaPos = i;
+            if(whatToWrite[i] == "H")
+                solverParams.whatToWrite[0] = true;
+
+            else if(whatToWrite[i] == "u")
+                solverParams.whatToWrite[1] = true;
+
+            else if(whatToWrite[i] == "v")
+                solverParams.whatToWrite[2] = true;
+
+            else if(whatToWrite[i] == "sKE")
+                solverParams.whatToWrite[3] = true;
+
+            else if(whatToWrite[i] == "vField")
+                solverParams.whatToWrite[4] = true;
+
+            else
+                error = true;
         }
     }
-    //At the end, still one push_back to do
-    solverParams.whatToWrite.push_back(
-        (temp.substr(precComaPos+1, temp.size() - precComaPos - 1))
-        == "1" ? true : false);
-
-    bool error = false;
-    if(solverParams.problemType == "shallow"
-        || solverParams.problemType == "shallowLin")
+    else if(solverParams.problemType == "AcousticLin")
     {
-        if(solverParams.whatToWrite.size() !=5)
-            error = true;
-        else
+        solverParams.whatToWrite.resize(5);
+        solverParams.viewTags.resize(5);
+        std::fill(solverParams.whatToWrite.begin(),
+                  solverParams.whatToWrite.end(), false);
+        for (unsigned short i = 0 ; i < whatToWrite.size() ; ++i)
         {
-            solverParams.write = writeShallow;
+            if(whatToWrite[i] == "p'")
+                solverParams.whatToWrite[0] = true;
+
+            else if(whatToWrite[i] == "u'")
+                solverParams.whatToWrite[1] = true;
+
+            else if(whatToWrite[i] == "v'")
+                solverParams.whatToWrite[2] = true;
+
+            else if(whatToWrite[i] == "sKE'")
+                solverParams.whatToWrite[3] = true;
+
+            else if(whatToWrite[i] == "vField'")
+                solverParams.whatToWrite[4] = true;
+
+            else
+                error = true;
         }
     }
     else if(solverParams.problemType == "transport")
     {
-        if(solverParams.whatToWrite.size() !=1)
-            error = true;
-        else
+        solverParams.whatToWrite.resize(1);
+        solverParams.viewTags.resize(1);
+        std::fill(solverParams.whatToWrite.begin(),
+                  solverParams.whatToWrite.end(), false);
+        for (unsigned short i = 0 ; i < whatToWrite.size() ; ++i)
         {
-            solverParams.write = writeTransport;
+            if(whatToWrite[i] == "u")
+                solverParams.whatToWrite[0] = true;
+
+            else
+                error = true;
         }
     }
     if(error)
     {
-        std::cerr << "Unexpected number of writing parameters ("
-                  << solverParams.whatToWrite.size() << ") for problem type "
+        std::cerr << "Unexpected writing parameters ("
+                  << j["physics"]["whatToWrite"].dump() << ") for problem type "
                   << solverParams.problemType << std::endl;
-
-        paramFile.close();
 
         return false;
     }
 
-    solverParams.viewTags.resize(solverParams.whatToWrite.size());
+    if(solverParams.problemType == "shallow")
+        solverParams.write = writeShallow;
 
-    temp.clear();
-    getLine(paramFile, temp);
-    error = false;
+    else if(solverParams.problemType == "shallowLin")
+        solverParams.write = writeShallowLin;
+
+    else if(solverParams.problemType == "transport")
+        solverParams.write = writeTransport;
+
+    else if(solverParams.problemType == "AcousticLin")
+        solverParams.write = writeAcousticLin;
+
+    temp = j["physics"]["numericalFlux"];
     if(solverParams.problemType == "shallow")
     {
         if(temp == "LF")
@@ -473,6 +412,16 @@ bool loadSolverParams(const std::string& fileName, SolverParams& solverParams)
         else
             error = true;
     }
+    else if(solverParams.problemType == "AcousticLin")
+    {
+        if(temp == "LF")
+        {
+            solverParams.fluxType = temp;
+            solverParams.phiPsi = LFAcousticLin;
+        }
+        else
+            error = true;
+    }
     else if(solverParams.problemType == "transport")
     {
         if(temp == "LF")
@@ -494,28 +443,11 @@ bool loadSolverParams(const std::string& fileName, SolverParams& solverParams)
                   << " for problem type " << solverParams.problemType
                   << " in parameter file " << fileName << std::endl;
 
-        paramFile.close();
         return false;
     }
 
-
-    temp.clear();
-    getLine(paramFile, temp);
-    precComaPos = -1;
-    for(unsigned int i = 0 ; i < temp.size() ; ++i)
-    {
-        if(temp[i] == ',')
-        {
-            solverParams.fluxCoeffs.push_back(
-                    std::stod(temp.substr(precComaPos + 1, i - precComaPos - 1)));
-            precComaPos = i;
-        }
-    }
-    //At the end, still one push_back to do
-    solverParams.fluxCoeffs.push_back(
-            std::stod(temp.substr(precComaPos+1, temp.size() - precComaPos - 1)));
-
     error = false;
+    solverParams.fluxCoeffs = j["physics"]["fluxCoefficients"].get<std::vector<double>>();
     if(solverParams.problemType == "shallow")
     {
         if(solverParams.fluxCoeffs.size() !=1)
@@ -527,9 +459,15 @@ bool loadSolverParams(const std::string& fileName, SolverParams& solverParams)
             error = true;
 
     }
-    if(solverParams.problemType == "transport")
+    else if(solverParams.problemType == "transport")
     {
         if(solverParams.fluxCoeffs.size() != 2)
+            error = true;
+
+    }
+    else if(solverParams.problemType == "AcousticLin")
+    {
+        if(solverParams.fluxCoeffs.size() != 4)
             error = true;
 
     }
@@ -539,88 +477,84 @@ bool loadSolverParams(const std::string& fileName, SolverParams& solverParams)
                   << solverParams.fluxCoeffs.size() << ") for problem type "
                   << solverParams.problemType << std::endl;
 
-        paramFile.close();
-
         return false;
     }
 
-    temp.clear();
-    getLine(paramFile, temp);
-    if(temp == "no")
+    temp = j["physics"]["sourceTerms"];
+    solverParams.IsSourceTerms = true;
+    error = false;
+    if(solverParams.problemType == "shallow")
+    {
+        if(temp == "no")
+        {
+            solverParams.IsSourceTerms = false;
+            solverParams.sourceType = temp;
+        }
+        else if(temp == "sourceShallowCstGradCstFrict"
+                && solverParams.problemType == "shallow")
+        {
+            solverParams.sourceType = temp;
+            solverParams.sourceTerm = sourceShallowCstGradCstFrict;
+        }
+        else if(temp == "sourceShallowCstGradQuadFrict"
+                && solverParams.problemType == "shallow")
+        {
+            solverParams.sourceType = temp;
+            solverParams.sourceTerm = sourceShallowCstGradQuadFrict;
+        }
+        else if(temp == "shallowLinCst" && solverParams.problemType == "shallowLin")
+        {
+            solverParams.sourceType = temp;
+            solverParams.sourceTerm = sourceShallowLinCst;
+        }
+        else
+            error = true;
+    }
+    else if(solverParams.problemType == "shallowLin" ||
+            solverParams.problemType == "transport" ||
+            solverParams.problemType == "AcousticLin")
     {
         solverParams.IsSourceTerms = false;
-        solverParams.sourceType = temp;
-    }
-    else if(temp == "sourceShallowCstGradCstFrict"
-            && solverParams.problemType == "shallow")
-    {
-        solverParams.IsSourceTerms = true;
-        solverParams.sourceType = temp;
-        solverParams.sourceTerm = sourceShallowCstGradCstFrict;
-    }
-    else if(temp == "sourceShallowCstGradQuadFrict"
-            && solverParams.problemType == "shallow")
-    {
-        solverParams.IsSourceTerms = true;
-        solverParams.sourceType = temp;
-        solverParams.sourceTerm = sourceShallowCstGradQuadFrict;
-    }
-    else if(temp == "shallowLinCst" && solverParams.problemType == "shallowLin")
-    {
-        solverParams.IsSourceTerms = true;
-        solverParams.sourceType = temp;
-        solverParams.sourceTerm = sourceShallowLinCst;
-    }
-    else
-    {
-        std::cerr << "Unexpected source function ("
-                  << solverParams.sourceType << ") for problem type "
-                  << solverParams.problemType << std::endl;
-
-        paramFile.close();
-        return false;
+        solverParams.sourceType = "no";
     }
 
-    temp.clear();
-    getLine(paramFile, temp);
-    precComaPos = -1;
-    for(unsigned int i = 0 ; i < temp.size() ; ++i)
+    if(error)
     {
-        if(temp[i] == ',')
-        {
-            solverParams.sourceCoeffs.push_back(
-                std::stod(temp.substr(precComaPos + 1, i - precComaPos - 1)));
-            precComaPos = i;
-        }
+            std::cerr << "Unexpected source function ("
+                      << solverParams.sourceType << ") for problem type "
+                      << solverParams.problemType << std::endl;
+
+            return false;
     }
-    //At the end, still one push_back to do
-    solverParams.sourceCoeffs.push_back(
-        std::stod(temp.substr(precComaPos+1, temp.size() - precComaPos - 1)));
 
 
     error = false;
-    if(solverParams.sourceType == "sourceShallowCstGradCstFrict")
+    solverParams.sourceCoeffs = j["physics"]["sourceCoefficients"].get<std::vector<double>>();
+    if(solverParams.problemType == "shallow")
     {
-        if(solverParams.IsSourceTerms)
+        if(solverParams.sourceType == "sourceShallowCstGradCstFrict")
         {
-            if(solverParams.sourceCoeffs.size() != 5)
-                error = true;
+            if(solverParams.IsSourceTerms)
+            {
+                if(solverParams.sourceCoeffs.size() != 5)
+                    error = true;
+            }
         }
-    }
-    if(solverParams.sourceType == "sourceShallowCstGradQuadFrict")
-    {
-        if(solverParams.IsSourceTerms)
+        else if(solverParams.sourceType == "sourceShallowCstGradQuadFrict")
         {
-            if(solverParams.sourceCoeffs.size() != 5)
-                error = true;
+            if(solverParams.IsSourceTerms)
+            {
+                if(solverParams.sourceCoeffs.size() != 5)
+                    error = true;
+            }
         }
-    }
-    else if(solverParams.sourceType == "shallowLinCst")
-    {
-        if(solverParams.IsSourceTerms)
+        else if(solverParams.sourceType == "shallowLinCst")
         {
-            if(solverParams.sourceCoeffs.size() != 1)
-                error = true;
+            if(solverParams.IsSourceTerms)
+            {
+                if(solverParams.sourceCoeffs.size() != 1)
+                    error = true;
+            }
         }
     }
 
@@ -630,18 +564,39 @@ bool loadSolverParams(const std::string& fileName, SolverParams& solverParams)
                       << solverParams.sourceCoeffs.size() << ") for problem type "
                       << solverParams.problemType << std::endl;
 
-        paramFile.close();
-
         return false;
     }
 
-    if(!handleBoundaryCondition(paramFile, solverParams, fileName))
+    if(!handleBoundaryCondition(j, solverParams, fileName))
+        return false;
+
+    return true;
+}
+
+//Documentation in .hpp
+bool loadSolverParams(const std::string& fileName, SolverParams& solverParams)
+{
+    std::ifstream paramFile(fileName);
+
+    if(!paramFile.is_open())
     {
+        std::cerr << "Something went wrong when trying to read the file "
+                  << fileName << std::endl
+                  << std::strerror(errno) << std::endl;
+
         paramFile.close();
         return false;
     }
 
+    nlohmann::json j;
+    paramFile >> j;
     paramFile.close();
+
+    if(!loadGeneralParams(j, fileName, solverParams))
+        return false;
+
+    if(!loadPhysicsParams(j, fileName, solverParams))
+        return false;
 
     // display the parameters
     std::cout   << "Number of Gauss points: " << solverParams.spaceIntType
